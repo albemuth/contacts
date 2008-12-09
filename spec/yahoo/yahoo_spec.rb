@@ -14,18 +14,21 @@ describe Contacts::Yahoo do
   end
 
   it 'should have a simple interface to grab the contacts' do
-    @yahoo.expects(:access_user_credentials).returns(read_file('yh_credential.xml'))
-    @yahoo.expects(:access_address_book_api).returns(read_file('yh_contacts.txt'))
+    @yahoo.expects(:access_user_credentials).returns(load_sample('yh_credential.xml'))
+    @yahoo.expects(:access_address_book_api).returns(load_sample('yh_contacts.json'))
 
     redirect_path = '/?appid=i%3DB%26p%3DUw70JGIdHWVRbpqYItcMw--&token=AB.KoEg8vBwvJKFkwfcDTJEMKhGeAD6KhiDe0aZLCvoJzMeQG00-&appdata=&ts=1218501215&sig=d381fba89c7e9d3c14788720733c3fbf'
                             
+    contacts = @yahoo.contacts(redirect_path)
     
-    @yahoo.contacts(redirect_path).should == [ ['Hugo Barauna', 'hugo.barauna@gmail.com'],
-                                ['Nina Benchimol', 'nina@hotmail.com'],
-                                ['Andrea Dimitri', 'and@yahoo.com'],
-                                ['Ricardo Fiorelli', 'ricardo@poli.usp.br'],
-                                ['Priscila', 'pizinha@yahoo.com.br']
-                              ]
+    contacts.size.should == 5
+
+    #contacts.first.name.should == 'Hugo Enrique Barauna'
+    contacts.first.name.should == 'Hugo Barauna'
+    contacts.first.email.should == 'hugo.barauna@gmail.com'
+
+    contacts[4].name.should == 'Priscila'
+    contacts[4].email.should == 'pizinha@yahoo.com.br'
   end
 
   it 'should validate yahoo redirect signature' do
@@ -49,29 +52,38 @@ describe Contacts::Yahoo do
   end
   
   it 'should parse the credential XML' do
-    @yahoo.parse_credentials(read_file('yh_credential.xml'))
+    @yahoo.parse_credentials(load_sample('yh_credential.xml'))
 
     @yahoo.wssid.should == 'tr.jZsW/ulc'
     @yahoo.cookie.should == 'Y=cdunlEx76ZEeIdWyeJNOegxfy.jkeoULJCnc7Q0Vr8D5P.u.EE2vCa7G2MwBoULuZhvDZuJNqhHwF3v5RJ4dnsWsEDGOjYV1k6snoln3RlQmx0Ggxs0zAYgbaA4BFQk5ieAkpipq19l6GoD_k8IqXRfJN0Q54BbekC_O6Tj3zl2wV3YQK6Mi2MWBQFSBsO26Tw_1yMAF8saflF9EX1fQl4N.1yBr8UXb6LLDiPQmlISq1_c6S6rFbaOhSZMgO78f2iqZmUAk9RmCHrqPJiHEo.mJlxxHaQsuqTMf7rwLEHqK__Gi_bLypGtaslqeWyS0h2J.B5xwRC8snfEs3ct_kLXT3ngP_pK3MeMf2pe1TiJ4JXVciY9br.KJFUgNd4J6rmQsSFj4wPLoMGCETfVc.M8KLiaFHasZqXDyCE7tvd1khAjQ_xLfQKlg1GlBOWmbimQ1FhdHnsVj3svXjEGquRh8JI2sHIQrzoiqAPBf9WFKQcH0t_1dxf4MOH.7gJaYDPEozCW5EcCsYjuHup9xJKxyTddh5pk8yUg5bURzA.TwPalExMKsbv.RWFBhzWKuTp5guNcqjmUHcCoT19_qFENHX41Xf3texAnsDDGj'
   end
 
   it 'should parse the contacts json response' do
-    json = read_file('yh_contacts.txt')
+    json = load_sample('yh_contacts.json')
     
-    Contacts::Yahoo.parse_contacts(json).should == [ ['Hugo Barauna', 'hugo.barauna@gmail.com'],
-                                                     ['Nina Benchimol', 'nina@hotmail.com'],
-                                                     ['Andrea Dimitri', 'and@yahoo.com'],
-                                                     ['Ricardo Fiorelli', 'ricardo@poli.usp.br'],
-                                                     ['Priscila', 'pizinha@yahoo.com.br']
-                                                   ]
+    contacts = Contacts::Yahoo.parse_contacts(json)
+    contacts.size.should == 5
+
+    #contacts.first.name.should == 'Hugo Enrique Barauna'
+    contacts.first.name.should == 'Hugo Barauna'
+    contacts.first.email.should == 'hugo.barauna@gmail.com'
+    contacts[4].name.should == 'Priscila'
+    contacts[4].email.should == 'pizinha@yahoo.com.br'
+
+    
+#    contacts.first.middle_name.should == 'Enrique'
+#    contacts.first.prefix.should == 'Mr.'
+#    contacts.first.phone_numbers.size.should == 4
+#    contacts.first.phone_numbers[:work].should == "555-2345671"
+#    contacts.first.phone_numbers[:fax].should == "555-2345674"
+#    contacts.first.birthday.should == "19830716"
+#
+#    contacts.first.addresses[:work].should == {:street=>"1 Infinite Loop", :state=>"CA", :zip=>"95014", :city=>"Cupertino", :country=>"USA"}
+
   end
 
   it 'should can be initialized by a YAML file' do
     @yahoo.appid.should == 'i%3DB%26p%3DUw70JGIdHWVRbpqYItcMw--'
     @yahoo.secret.should == 'a34f389cbd135de4618eed5e23409d34450'
-  end
-
-  def read_file(file)
-    File.open(@path + file, 'r+').read
   end
 end

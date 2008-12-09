@@ -13,6 +13,10 @@ module SampleFeeds
   def sample_xml(name)
     File.read "#{FEED_DIR}#{name}.xml"
   end
+  
+  def load_sample(name)
+    File.read"#{FEED_DIR}#{name}"
+  end
 end
 
 module HttpMocks

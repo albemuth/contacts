@@ -227,10 +227,43 @@ module Contacts
             name.strip!
           end
         end
-        contacts.push([name, email])
+        contacts.push(Contact.new(email, name))
       end
       return contacts
     end
 
   end
+  
+#  module Yahoo
+#    class Contact < Contacts::Contact
+#
+#      attr_accessor :first, :middle, :last, :prefix, :suffix, :first_sound, :last_sound
+#
+#
+#      def name
+#        middle ? "#{first} #{middle} #{last}" : "#{first} #{last}".strip
+#      end
+#
+#      def name= value
+#        case value
+#          when Hash
+#            #first = value[:first]
+#          else
+#            raise "Expected a Hash"
+#        end
+#        name
+#      end
+#
+#      def email
+#
+#      end
+#
+#
+#    end
+#
+#    class Address
+#      attr_accessor :street, :city, :state, :zip, :country
+#    end
+#  end
+  
 end
